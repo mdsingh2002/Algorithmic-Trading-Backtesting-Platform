@@ -12,10 +12,10 @@ import time
 def check_python_version():
     """Check if Python version is compatible"""
     if sys.version_info < (3, 8):
-        print("❌ Python 3.8 or higher is required")
+        print("Python 3.8 or higher is required")
         print(f"Current version: {sys.version}")
         return False
-    print(f"✅ Python version: {sys.version.split()[0]}")
+    print(f"Python version: {sys.version.split()[0]}")
     return True
 
 def check_dependencies():
@@ -30,9 +30,9 @@ def check_dependencies():
     for package in required_packages:
         try:
             __import__(package.replace('-', '_'))
-            print(f"✅ {package}")
+            print(f"{package}")
         except ImportError:
-            print(f"❌ {package}")
+            print(f"{package}")
             missing_packages.append(package)
     
     if missing_packages:
@@ -40,10 +40,10 @@ def check_dependencies():
         print("Installing missing packages...")
         try:
             subprocess.check_call([sys.executable, '-m', 'pip', 'install', '-r', 'requirements.txt'])
-            print("✅ Dependencies installed successfully")
+            print("Dependencies installed successfully")
             return True
         except subprocess.CalledProcessError:
-            print("❌ Failed to install dependencies")
+            print("Failed to install dependencies")
             return False
     
     return True
@@ -51,7 +51,7 @@ def check_dependencies():
 def create_env_file():
     """Create .env file if it doesn't exist"""
     if os.path.exists('.env'):
-        print("✅ .env file already exists")
+        print(".env file already exists")
         return True
     
     print("Creating .env file...")
@@ -62,17 +62,17 @@ def create_env_file():
         with open('.env', 'w') as f:
             f.write(env_content)
         
-        print("✅ .env file created from template")
-        print("⚠️  Please review and edit .env file with your settings")
+        print(".env file created from template")
+        print("Please review and edit .env file with your settings")
         return True
     except Exception as e:
-        print(f"❌ Failed to create .env file: {e}")
+        print(f" Failed to create .env file: {e}")
         return False
 
 def check_ib_software():
     """Check if Interactive Brokers software is likely running"""
     print("\nChecking Interactive Brokers software...")
-    print("⚠️  Make sure TWS or IB Gateway is running and configured:")
+    print("Make sure TWS or IB Gateway is running and configured:")
     print("   1. TWS/Gateway should be logged in")
     print("   2. API connections should be enabled")
     print("   3. Port should be set to 7497 (TWS) or 4001 (Gateway)")
@@ -89,7 +89,7 @@ def test_connection():
         run_test()
         return True
     except Exception as e:
-        print(f"❌ Connection test failed: {e}")
+        print(f"Connection test failed: {e}")
         return False
 
 def start_application():
@@ -104,11 +104,11 @@ def start_application():
     except KeyboardInterrupt:
         print("\nApplication stopped by user")
     except Exception as e:
-        print(f"❌ Failed to start application: {e}")
+        print(f"Failed to start application: {e}")
 
 def main():
     """Main quick start function"""
-    print("🚀 Algo Trading Platform - Quick Start")
+    print("Algo Trading Platform - Quick Start")
     print("=" * 50)
     
     # Step 1: Check Python version
@@ -119,7 +119,7 @@ def main():
     # Step 2: Check dependencies
     print("\nStep 2: Checking dependencies...")
     if not check_dependencies():
-        print("❌ Failed to install dependencies. Please run: pip install -r requirements.txt")
+        print("Failed to install dependencies. Please run: pip install -r requirements.txt")
         return
     
     # Step 3: Create environment file
@@ -130,14 +130,14 @@ def main():
     # Step 4: Check IB software
     print("\nStep 4: Interactive Brokers software check...")
     if not check_ib_software():
-        print("❌ Please start TWS or IB Gateway and configure API settings")
+        print("Please start TWS or IB Gateway and configure API settings")
         print("   Then run this script again")
         return
     
     # Step 5: Test connection
     print("\nStep 5: Testing connection...")
     if not test_connection():
-        print("❌ Connection test failed. Please check your TWS/Gateway configuration")
+        print("Connection test failed. Please check your TWS/Gateway configuration")
         return
     
     # Step 6: Start application
@@ -146,3 +146,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
