@@ -26,7 +26,7 @@ def test_connection():
         success = ib_conn.connect()
         
         if success:
-            print("✅ Successfully connected to Interactive Brokers!")
+            print("Successfully connected to Interactive Brokers!")
             print()
             
             # Test account information
@@ -36,11 +36,11 @@ def test_connection():
             
             account_info = ib_conn.get_account_info()
             if account_info:
-                print("✅ Account information received:")
+                print("Account information received:")
                 for key, value in account_info.items():
                     print(f"   {key}: ${float(value):,.2f}")
             else:
-                print("⚠️  No account information received")
+                print("No account information received")
             
             print()
             
@@ -48,26 +48,26 @@ def test_connection():
             print("Testing market data for AAPL...")
             req_id = ib_conn.request_market_data("AAPL")
             if req_id:
-                print(f"✅ Market data request sent (ReqID: {req_id})")
+                print(f"Market data request sent (ReqID: {req_id})")
                 time.sleep(3)  # Wait for data
                 
                 market_data = ib_conn.get_market_data(req_id)
                 if market_data and 'price' in market_data:
-                    print(f"✅ Market data received: ${market_data['price']:.2f}")
+                    print(f"Market data received: ${market_data['price']:.2f}")
                 else:
-                    print("⚠️  No market data received (may be outside market hours)")
+                    print("No market data received (may be outside market hours)")
             else:
-                print("❌ Failed to request market data")
+                print("Failed to request market data")
             
             print()
             
             # Disconnect
             print("Disconnecting...")
             ib_conn.disconnect()
-            print("✅ Disconnected successfully")
+            print("Disconnected successfully")
             
         else:
-            print("❌ Failed to connect to Interactive Brokers")
+            print("Failed to connect to Interactive Brokers")
             print()
             print("Troubleshooting tips:")
             print("1. Make sure TWS or IB Gateway is running and logged in")
@@ -77,7 +77,7 @@ def test_connection():
             print("5. Check that the client ID is unique")
             
     except Exception as e:
-        print(f"❌ Error during connection test: {e}")
+        print(f"Error during connection test: {e}")
         print()
         print("Make sure you have:")
         print("1. Interactive Brokers account")
@@ -110,3 +110,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
