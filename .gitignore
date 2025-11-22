@@ -35,6 +35,12 @@ Lib/
 Include/
 *.exe
 
+# Deployment files (for local use only, not for GitHub)
+DEPLOYMENT.md
+Procfile
+gunicorn_config.py
+runtime.txt
+
 # IDE
 .idea/
 .vscode/
