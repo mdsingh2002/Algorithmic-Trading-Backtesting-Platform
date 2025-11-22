@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algo Trading Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            --danger-gradient: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+            --dark-bg: #0f0f23;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.15);
+            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.2);
+            --shadow-xl: 0 16px 64px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--dark-bg);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(102, 126, 234, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(118, 75, 162, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(235, 51, 73, 0.1) 0px, transparent 50%),
+                radial-gradient(at 0% 100%, rgba(17, 153, 142, 0.1) 0px, transparent 50%);
+            min-height: 100vh;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: var(--text-primary);
+            font-weight: 400;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container-fluid {
+            padding: 2rem;
+        }
+
+        .card {
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            box-shadow: var(--shadow-lg);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--primary-gradient);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-xl);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card-header {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            border-radius: 0;
+            padding: 1.5rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .card-header h2, .card-header h5 {
+            margin: 0;
+            font-weight: 700;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .btn {
+            border: none;
+            border-radius: 12px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            letter-spacing: 0.01em;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.05em;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-success {
+            background: var(--success-gradient);
+            color: white;
+            box-shadow: 0 4px 15px rgba(17, 153, 142, 0.4);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(17, 153, 142, 0.6);
+        }
+
+        .btn-danger {
+            background: var(--danger-gradient);
+            color: white;
+            box-shadow: 0 4px 15px rgba(235, 51, 73, 0.4);
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(235, 51, 73, 0.6);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 10px;
+            position: relative;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .status-connected { 
+            background-color: #38ef7d;
+            box-shadow: 0 0 10px rgba(56, 239, 125, 0.5);
+        }
+
+        .status-disconnected { 
+            background-color: #eb3349;
+            box-shadow: 0 0 10px rgba(235, 51, 73, 0.5);
+        }
+
+        .status-trading { 
+            background-color: #ffc107;
+            box-shadow: 0 0 10px rgba(255, 193, 7, 0.5);
+        }
+
+        .price-up { color: #38ef7d; font-weight: 600; }
+        .price-down { color: #eb3349; font-weight: 600; }
+        .price-unchanged { color: var(--text-secondary); }
+
+        .form-control, .form-select {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(102, 126, 234, 0.5);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            color: var(--text-primary);
+        }
+
+        .form-control::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .table {
+            color: var(--text-primary);
+        }
+
+        .table thead th {
+            border-bottom: 2px solid var(--card-border);
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            padding: 1rem;
+        }
+
+        .table tbody tr {
+            transition: all 0.3s ease;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: scale(1.01);
+        }
+
+        .table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+        }
+
+        .market-data-row {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .market-data-row:hover {
+            background: rgba(102, 126, 234, 0.1) !important;
+        }
+
+        .strategy-card {
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            margin-bottom: 0.75rem;
+        }
+
+        .strategy-card:hover {
+            transform: translateX(8px);
+            background: rgba(102, 126, 234, 0.1);
+            border-color: rgba(102, 126, 234, 0.5);
+        }
+
+        .strategy-card.active {
+            background: rgba(102, 126, 234, 0.15);
+            border: 2px solid rgba(102, 126, 234, 0.8);
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .badge {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+
+        .badge.bg-primary {
+            background: var(--primary-gradient) !important;
+        }
+
+        .badge.bg-success {
+            background: var(--success-gradient) !important;
+        }
+
+        .badge.bg-danger {
+            background: var(--danger-gradient) !important;
+        }
+
+        .badge.bg-warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
+        }
+
+        .text-muted {
+            color: var(--text-secondary) !important;
+        }
+
+        .loading {
+            display: none;
+        }
+
+        .loading.show {
+            display: inline-block;
+        }
+
+        .input-group .btn {
+            border-radius: 0 10px 10px 0;
+        }
+
+        .input-group .form-control {
+            border-radius: 10px 0 0 10px;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .fw-bold {
+            font-weight: 600;
+        }
+
+        /* Smooth scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-gradient);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid py-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="mb-0">
+                            <i class="fas fa-chart-line me-2"></i>
+                            Algo Trading Dashboard
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <span class="status-indicator" id="connectionStatus"></span>
+                                    <span id="connectionText">Disconnected</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <button class="btn btn-primary me-2" id="connectBtn" onclick="connectToIB()">
+                                    <i class="fas fa-plug me-1"></i>Connect
+                                </button>
+                                <button class="btn btn-danger" id="disconnectBtn" onclick="disconnectFromIB()" disabled>
+                                    <i class="fas fa-times me-1"></i>Disconnect
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Trading Controls -->
+            <div class="col-lg-4 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>Trading Controls</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Active Strategy</label>
+                            <div id="strategiesContainer"></div>
+                        </div>
+                        <div class="mb-3">
+                            <button class="btn btn-success w-100 mb-2" id="startTradingBtn" onclick="startTrading()" disabled>
+                                <i class="fas fa-play me-1"></i>Start Trading
+                            </button>
+                            <button class="btn btn-danger w-100" id="stopTradingBtn" onclick="stopTrading()" disabled>
+                                <i class="fas fa-stop me-1"></i>Stop Trading
+                            </button>
+                        </div>
+                        <div class="mb-3">
+                            <h6>Manual Trade</h6>
+                            <div class="row">
+                                <div class="col-6">
+                                    <input type="text" class="form-control mb-2" id="tradeSymbol" placeholder="Symbol">
+                                </div>
+                                <div class="col-6">
+                                    <input type="number" class="form-control mb-2" id="tradeQuantity" placeholder="Quantity">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <button class="btn btn-success w-100" onclick="executeTrade('BUY')" disabled>
+                                        <i class="fas fa-arrow-up me-1"></i>Buy
+                                    </button>
+                                </div>
+                                <div class="col-6">
+                                    <button class="btn btn-danger w-100" onclick="executeTrade('SELL')" disabled>
+                                        <i class="fas fa-arrow-down me-1"></i>Sell
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Watchlist Management -->
+            <div class="col-lg-4 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-eye me-2"></i>Watchlist</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="newSymbol" placeholder="Add symbol (e.g., AAPL)">
+                                <button class="btn btn-primary" onclick="addToWatchlist()">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="watchlistContainer">
+                            <p class="text-muted">No symbols in watchlist</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account Information -->
+            <div class="col-lg-4 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-wallet me-2"></i>Account Info</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="accountInfo">
+                            <p class="text-muted">Connect to view account information</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Market Data -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Market Data</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Symbol</th>
+                                        <th>Price</th>
+                                        <th>Size</th>
+                                        <th>Last Update</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="marketDataTable">
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted">No market data available</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Positions and Performance -->
+        <div class="row">
+            <div class="col-lg-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-list me-2"></i>Positions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="positionsContainer">
+                            <p class="text-muted">No positions</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-trophy me-2"></i>Performance</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="performanceContainer">
+                            <p class="text-muted">No performance data available</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trade History -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-history me-2"></i>Trade History</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>Symbol</th>
+                                        <th>Action</th>
+                                        <th>Quantity</th>
+                                        <th>Order Type</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tradeHistoryTable">
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted">No trade history</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let updateInterval;
+        let marketDataInterval;
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStatus();
+            loadStrategies();
+        });
+
+        // Update system status
+        async function updateStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const status = await response.json();
+                
+                updateConnectionStatus(status.connected);
+                updateTradingStatus(status.trading_enabled);
+                updateWatchlist(status.watchlist);
+                
+                if (status.connected) {
+                    loadAccountInfo();
+                    loadPositions();
+                    loadPerformance();
+                    loadTradeHistory();
+                    startMarketDataUpdates();
+                }
+            } catch (error) {
+                console.error('Error updating status:', error);
+            }
+        }
+
+        // Update connection status
+        function updateConnectionStatus(connected) {
+            const statusIndicator = document.getElementById('connectionStatus');
+            const connectionText = document.getElementById('connectionText');
+            const connectBtn = document.getElementById('connectBtn');
+            const disconnectBtn = document.getElementById('disconnectBtn');
+            
+            if (connected) {
+                statusIndicator.className = 'status-indicator status-connected';
+                connectionText.textContent = 'Connected';
+                connectBtn.disabled = true;
+                disconnectBtn.disabled = false;
+                enableTradingControls();
+            } else {
+                statusIndicator.className = 'status-indicator status-disconnected';
+                connectionText.textContent = 'Disconnected';
+                connectBtn.disabled = false;
+                disconnectBtn.disabled = true;
+                disableTradingControls();
+            }
+        }
+
+        // Update trading status
+        function updateTradingStatus(tradingEnabled) {
+            const startBtn = document.getElementById('startTradingBtn');
+            const stopBtn = document.getElementById('stopTradingBtn');
+            
+            if (tradingEnabled) {
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+            } else {
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+            }
+        }
+
+        // Enable trading controls
+        function enableTradingControls() {
+            document.querySelectorAll('#tradeSymbol, #tradeQuantity').forEach(el => el.disabled = false);
+            document.querySelectorAll('button[onclick*="executeTrade"]').forEach(el => el.disabled = false);
+        }
+
+        // Disable trading controls
+        function disableTradingControls() {
+            document.querySelectorAll('#tradeSymbol, #tradeQuantity').forEach(el => el.disabled = true);
+            document.querySelectorAll('button[onclick*="executeTrade"]').forEach(el => el.disabled = true);
+        }
+
+        // Connect to Interactive Brokers
+        async function connectToIB() {
+            try {
+                const response = await fetch('/api/connect', { method: 'POST' });
+                const result = await response.json();
+                
+                if (result.success) {
+                    updateStatus();
+                } else {
+                    alert('Failed to connect to Interactive Brokers');
+                }
+            } catch (error) {
+                console.error('Error connecting:', error);
+                alert('Error connecting to Interactive Brokers');
+            }
+        }
+
+        // Disconnect from Interactive Brokers
+        async function disconnectFromIB() {
+            try {
+                await fetch('/api/disconnect', { method: 'POST' });
+                updateStatus();
+            } catch (error) {
+                console.error('Error disconnecting:', error);
+            }
+        }
+
+        // Load strategies
+        async function loadStrategies() {
+            try {
+                const response = await fetch('/api/strategies');
+                const strategies = await response.json();
+                
+                const container = document.getElementById('strategiesContainer');
+                container.innerHTML = '';
+                
+                Object.entries(strategies).forEach(([key, strategy]) => {
+                    const card = document.createElement('div');
+                    card.className = `strategy-card card mb-2 ${strategy.active ? 'active' : ''}`;
+                    card.onclick = () => setStrategy(key);
+                    
+                    card.innerHTML = `
+                        <div class="card-body p-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>${strategy.name}</span>
+                                ${strategy.active ? '<i class="fas fa-check text-success"></i>' : ''}
+                            </div>
+                        </div>
+                    `;
+                    
+                    container.appendChild(card);
+                });
+            } catch (error) {
+                console.error('Error loading strategies:', error);
+            }
+        }
+
+        // Set active strategy
+        async function setStrategy(strategyName) {
+            try {
+                const response = await fetch('/api/strategy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ strategy: strategyName })
+                });
+                
+                if (response.ok) {
+                    loadStrategies();
+                }
+            } catch (error) {
+                console.error('Error setting strategy:', error);
+            }
+        }
+
+        // Start trading
+        async function startTrading() {
+            try {
+                const response = await fetch('/api/trading/start', { method: 'POST' });
+                const result = await response.json();
+                
+                if (result.success) {
+                    updateStatus();
+                } else {
+                    alert('Failed to start trading');
+                }
+            } catch (error) {
+                console.error('Error starting trading:', error);
+                alert('Error starting trading');
+            }
+        }
+
+        // Stop trading
+        async function stopTrading() {
+            try {
+                await fetch('/api/trading/stop', { method: 'POST' });
+                updateStatus();
+            } catch (error) {
+                console.error('Error stopping trading:', error);
+            }
+        }
+
+        // Add to watchlist
+        async function addToWatchlist() {
+            const symbol = document.getElementById('newSymbol').value.trim().toUpperCase();
+            if (!symbol) return;
+            
+            try {
+                const response = await fetch('/api/watchlist', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ symbol: symbol })
+                });
+                
+                if (response.ok) {
+                    document.getElementById('newSymbol').value = '';
+                    updateStatus();
+                } else {
+                    alert('Failed to add symbol to watchlist');
+                }
+            } catch (error) {
+                console.error('Error adding to watchlist:', error);
+            }
+        }
+
+        // Remove from watchlist
+        async function removeFromWatchlist(symbol) {
+            try {
+                const response = await fetch('/api/watchlist', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ symbol: symbol })
+                });
+                
+                if (response.ok) {
+                    updateStatus();
+                }
+            } catch (error) {
+                console.error('Error removing from watchlist:', error);
+            }
+        }
+
+        // Update watchlist display
+        function updateWatchlist(watchlist) {
+            const container = document.getElementById('watchlistContainer');
+            
+            if (watchlist.length === 0) {
+                container.innerHTML = '<p class="text-muted">No symbols in watchlist</p>';
+                return;
+            }
+            
+            container.innerHTML = watchlist.map(symbol => `
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="badge bg-primary">${symbol}</span>
+                    <button class="btn btn-sm btn-outline-danger" onclick="removeFromWatchlist('${symbol}')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // Load account information
+        async function loadAccountInfo() {
+            try {
+                const response = await fetch('/api/account');
+                const accountInfo = await response.json();
+                
+                const container = document.getElementById('accountInfo');
+                if (Object.keys(accountInfo).length === 0) {
+                    container.innerHTML = '<p class="text-muted">No account information available</p>';
+                    return;
+                }
+                
+                container.innerHTML = Object.entries(accountInfo).map(([key, value]) => `
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="fw-bold">${key}:</span>
+                        <span>$${parseFloat(value).toLocaleString()}</span>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading account info:', error);
+            }
+        }
+
+        // Load positions
+        async function loadPositions() {
+            try {
+                const response = await fetch('/api/positions');
+                const positions = await response.json();
+                
+                const container = document.getElementById('positionsContainer');
+                if (Object.keys(positions).length === 0) {
+                    container.innerHTML = '<p class="text-muted">No positions</p>';
+                    return;
+                }
+                
+                container.innerHTML = Object.entries(positions).map(([symbol, position]) => `
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="fw-bold">${symbol}</span>
+                        <span class="badge ${position.position > 0 ? 'bg-success' : 'bg-danger'}">
+                            ${position.position} shares @ $${parseFloat(position.avgCost).toFixed(2)}
+                        </span>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading positions:', error);
+            }
+        }
+
+        // Load performance metrics
+        async function loadPerformance() {
+            try {
+                const response = await fetch('/api/performance');
+                const performance = await response.json();
+                
+                const container = document.getElementById('performanceContainer');
+                if (Object.keys(performance).length === 0) {
+                    container.innerHTML = '<p class="text-muted">No performance data available</p>';
+                    return;
+                }
+                
+                container.innerHTML = `
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Total Trades:</span>
+                        <span class="fw-bold">${performance.total_trades || 0}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Completed Trades:</span>
+                        <span class="fw-bold">${performance.completed_trades || 0}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Completion Rate:</span>
+                        <span class="fw-bold">${((performance.completion_rate || 0) * 100).toFixed(1)}%</span>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error loading performance:', error);
+            }
+        }
+
+        // Load trade history
+        async function loadTradeHistory() {
+            try {
+                const response = await fetch('/api/trade-history');
+                const tradeHistory = await response.json();
+                
+                const tbody = document.getElementById('tradeHistoryTable');
+                if (tradeHistory.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No trade history</td></tr>';
+                    return;
+                }
+                
+                tbody.innerHTML = tradeHistory.map(trade => `
+                    <tr>
+                        <td>${new Date(trade.timestamp).toLocaleString()}</td>
+                        <td class="fw-bold">${trade.symbol}</td>
+                        <td><span class="badge ${trade.action === 'BUY' ? 'bg-success' : 'bg-danger'}">${trade.action}</span></td>
+                        <td>${trade.quantity}</td>
+                        <td>${trade.order_type}</td>
+                        <td><span class="badge bg-warning">${trade.status}</span></td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading trade history:', error);
+            }
+        }
+
+        // Start market data updates
+        function startMarketDataUpdates() {
+            if (marketDataInterval) {
+                clearInterval(marketDataInterval);
+            }
+            
+            marketDataInterval = setInterval(updateMarketData, 5000); // Update every 5 seconds
+            updateMarketData(); // Initial update
+        }
+
+        // Update market data
+        async function updateMarketData() {
+            try {
+                const response = await fetch('/api/market-data');
+                const marketData = await response.json();
+                
+                const tbody = document.getElementById('marketDataTable');
+                if (Object.keys(marketData).length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No market data available</td></tr>';
+                    return;
+                }
+                
+                tbody.innerHTML = Object.entries(marketData).map(([symbol, data]) => `
+                    <tr class="market-data-row">
+                        <td class="fw-bold">${symbol}</td>
+                        <td class="price-unchanged">$${data.price ? parseFloat(data.price).toFixed(2) : 'N/A'}</td>
+                        <td>${data.size || 'N/A'}</td>
+                        <td>${new Date().toLocaleTimeString()}</td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error updating market data:', error);
+            }
+        }
+
+        // Execute manual trade
+        async function executeTrade(action) {
+            const symbol = document.getElementById('tradeSymbol').value.trim().toUpperCase();
+            const quantity = parseInt(document.getElementById('tradeQuantity').value);
+            
+            if (!symbol || !quantity) {
+                alert('Please enter both symbol and quantity');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/execute-trade', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        symbol: symbol,
+                        action: action,
+                        quantity: quantity,
+                        order_type: 'MKT'
+                    })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    alert(`${action} order placed successfully! Order ID: ${result.order_id}`);
+                    document.getElementById('tradeSymbol').value = '';
+                    document.getElementById('tradeQuantity').value = '';
+                    loadTradeHistory();
+                } else {
+                    alert('Failed to execute trade: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Error executing trade:', error);
+                alert('Error executing trade');
+            }
+        }
+
+        // Handle Enter key in symbol input
+        document.getElementById('newSymbol').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addToWatchlist();
+            }
+        });
+
+        // Set up periodic status updates
+        setInterval(updateStatus, 10000); // Update every 10 seconds
+    </script>
+</body>
+</html>

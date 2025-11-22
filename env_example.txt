@@ -1,0 +1,24 @@
+# Interactive Brokers TWS/Gateway settings
+IB_HOST=127.0.0.1
+IB_PORT=7497
+IB_CLIENT_ID=1
+
+# Paper trading settings (set to False for live trading)
+PAPER_TRADING=True
+
+# Trading parameters
+DEFAULT_QUANTITY=100
+MAX_POSITION_SIZE=1000
+
+# Risk management
+STOP_LOSS_PERCENTAGE=2.0
+TAKE_PROFIT_PERCENTAGE=5.0
+
+# API settings
+FLASK_HOST=0.0.0.0
+FLASK_PORT=5000
+DEBUG=True
+
+# Logging
+LOG_LEVEL=INFO
+LOG_FILE=algo_trading.log

@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pandas Backtesting Engine</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            --danger-gradient: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+            --metric-gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --metric-gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --metric-gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --metric-gradient-4: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            --metric-gradient-5: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            --metric-gradient-6: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+            --dark-bg: #0f0f23;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.15);
+            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.2);
+            --shadow-xl: 0 16px 64px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--dark-bg);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(102, 126, 234, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(118, 75, 162, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(235, 51, 73, 0.1) 0px, transparent 50%),
+                radial-gradient(at 0% 100%, rgba(17, 153, 142, 0.1) 0px, transparent 50%);
+            min-height: 100vh;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: var(--text-primary);
+            font-weight: 400;
+            line-height: 1.6;
+            padding: 2rem 0;
+        }
+
+        .main-container {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            box-shadow: var(--shadow-xl);
+            margin: 2rem auto;
+            padding: 3rem;
+            max-width: 1400px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .main-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary-gradient);
+        }
+
+        h1 {
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.5rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .text-muted {
+            color: var(--text-secondary) !important;
+        }
+
+        .card {
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 2rem;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .card-header {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            border-radius: 0;
+            padding: 1.5rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-body {
+            padding: 2rem;
+            color: var(--text-primary);
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: 12px;
+            padding: 1rem 2.5rem;
+            font-weight: 600;
+            font-size: 1rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .form-control, .form-select {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            padding: 0.75rem 1rem;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(102, 126, 234, 0.5);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            color: var(--text-primary);
+        }
+
+        .form-control::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .form-label {
+            color: var(--text-primary);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-card {
+            border-radius: 20px;
+            padding: 1.5rem;
+            text-align: center;
+            margin: 0.75rem 0;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 120px;
+        }
+
+        .metric-card:nth-child(1) { background: var(--metric-gradient-1); }
+        .metric-card:nth-child(2) { background: var(--metric-gradient-2); }
+        .metric-card:nth-child(3) { background: var(--metric-gradient-3); }
+        .metric-card:nth-child(4) { background: var(--metric-gradient-4); }
+        .metric-card:nth-child(5) { background: var(--metric-gradient-5); }
+        .metric-card:nth-child(6) { background: var(--metric-gradient-6); }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+            letter-spacing: -0.02em;
+            white-space: nowrap;
+            overflow: visible;
+            width: 100%;
+            text-align: center;
+            line-height: 1.2;
+            max-width: 100%;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.95);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            position: relative;
+            z-index: 1;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 4rem;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner-border {
+            width: 4rem;
+            height: 4rem;
+            border-width: 0.3em;
+            border-color: rgba(102, 126, 234, 0.3);
+            border-right-color: #667eea;
+        }
+
+        #results-container {
+            display: none;
+        }
+
+
+        .trade-table {
+            max-height: 400px;
+            overflow-y: auto;
+            border-radius: 12px;
+        }
+
+        .table {
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .table thead th {
+            border-bottom: 2px solid var(--card-border);
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .table tbody tr {
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+        }
+
+        .badge {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+
+        .badge.bg-success {
+            background: var(--success-gradient) !important;
+        }
+
+        .badge.bg-danger {
+            background: var(--danger-gradient) !important;
+        }
+
+        #portfolio-chart, #returns-chart, #cumulative-chart {
+            width: 100%;
+            height: auto;
+            min-height: 400px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 12px;
+            padding: 1rem;
+        }
+
+        .chart-container {
+            width: 100%;
+            overflow-x: auto;
+            margin-bottom: 2rem;
+        }
+
+        /* Smooth scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-gradient);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+
+            .metric-value {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="main-container">
+            <div class="row">
+                <div class="col-12 text-center mb-5">
+                    <h1 class="mb-3">
+                        <i class="fas fa-chart-line me-3"></i>
+                        Pandas Backtesting Engine
+                    </h1>
+                    <p class="text-muted fs-5">
+                        Test Your Trading Strategies with Historical Data
+                    </p>
+                </div>
+            </div>
+
+            <!-- Configuration Form -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-cog"></i> Backtest Configuration
+                </div>
+                <div class="card-body">
+                    <form id="backtest-form">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <label for="symbol" class="form-label">Symbol</label>
+                                <input type="text" class="form-control" id="symbol" value="AAPL" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="strategy" class="form-label">Strategy</label>
+                                <select class="form-select" id="strategy" required>
+                                    <option value="Moving Average Crossover">Moving Average Crossover</option>
+                                    <option value="Bollinger Bands">Bollinger Bands</option>
+                                    <option value="RSI Strategy">RSI Strategy</option>
+                                    <option value="Scalping Strategy">Scalping Strategy</option>
+                                    <option value="Momentum Strategy">Momentum Strategy</option>
+                                    <option value="Mean Reversion Strategy">Mean Reversion Strategy</option>
+                                    <option value="Breakout Strategy">Breakout Strategy</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="start_date" class="form-label">Start Date</label>
+                                <input type="date" class="form-control" id="start_date" value="2023-01-01" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="end_date" class="form-label">End Date</label>
+                                <input type="date" class="form-control" id="end_date" value="2024-01-01" required>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label for="initial_capital" class="form-label">Initial Capital ($)</label>
+                                <input type="number" class="form-control" id="initial_capital" value="100000" min="1000" required>
+                            </div>
+                            <div class="col-md-6 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary btn-lg w-100">
+                                    <i class="fas fa-play"></i> Run Backtest
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Loading -->
+            <div class="loading" id="loading">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-3">Running backtest... This may take a few moments.</p>
+            </div>
+
+            <!-- Results -->
+            <div id="results-container">
+                <!-- Performance Metrics -->
+                <div class="row" id="metrics-row">
+                    <!-- Metrics will be populated here -->
+                </div>
+
+                <!-- Charts -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-chart-area"></i> Performance Charts
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <div id="portfolio-chart"></div>
+                        </div>
+                        <div class="chart-container">
+                            <div id="returns-chart"></div>
+                        </div>
+                        <div class="chart-container">
+                            <div id="cumulative-chart"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Trade History -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-history"></i> Trade History
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive trade-table">
+                            <table class="table table-striped" id="trade-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Action</th>
+                                        <th>Price</th>
+                                        <th>Quantity</th>
+                                        <th>Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="trade-tbody">
+                                    <!-- Trades will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('backtest-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results-container').style.display = 'none';
+            
+            // Get form data
+            const formData = {
+                symbol: document.getElementById('symbol').value.toUpperCase(),
+                strategy: document.getElementById('strategy').value,
+                start_date: document.getElementById('start_date').value,
+                end_date: document.getElementById('end_date').value,
+                initial_capital: parseFloat(document.getElementById('initial_capital').value)
+            };
+            
+            try {
+                const response = await fetch('/api/run_backtest', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.error) {
+                    alert('Error: ' + result.error);
+                    return;
+                }
+                
+                displayResults(result);
+                
+            } catch (error) {
+                alert('Error running backtest: ' + error.message);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        });
+        
+        function autoFitText(element) {
+            const container = element.parentElement;
+            const containerWidth = container.offsetWidth - 30; // Padding
+            let fontSize = 2; // Start with 2rem
+            element.style.fontSize = fontSize + 'rem';
+            
+            // Create a temporary span to measure text width accurately
+            const tempSpan = document.createElement('span');
+            tempSpan.style.visibility = 'hidden';
+            tempSpan.style.position = 'absolute';
+            tempSpan.style.whiteSpace = 'nowrap';
+            tempSpan.style.fontSize = fontSize + 'rem';
+            tempSpan.style.fontWeight = '800';
+            tempSpan.textContent = element.textContent;
+            document.body.appendChild(tempSpan);
+            
+            // Decrease font size until text fits
+            while (tempSpan.offsetWidth > containerWidth && fontSize > 0.7) {
+                fontSize -= 0.05;
+                tempSpan.style.fontSize = fontSize + 'rem';
+                element.style.fontSize = fontSize + 'rem';
+            }
+            
+            document.body.removeChild(tempSpan);
+        }
+        
+        function displayResults(data) {
+            // Display metrics
+            const metricsRow = document.getElementById('metrics-row');
+            metricsRow.innerHTML = `
+                <div class="col-md-2">
+                    <div class="metric-card">
+                        <div class="metric-value">${(data.total_return * 100).toFixed(2)}%</div>
+                        <div class="metric-label">Total Return</div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="metric-card">
+                        <div class="metric-value">${(data.annualized_return * 100).toFixed(2)}%</div>
+                        <div class="metric-label">Annualized Return</div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="metric-card">
+                        <div class="metric-value">${data.sharpe_ratio.toFixed(2)}</div>
+                        <div class="metric-label">Sharpe Ratio</div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="metric-card">
+                        <div class="metric-value">${(data.max_drawdown * 100).toFixed(2)}%</div>
+                        <div class="metric-label">Max Drawdown</div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="metric-card">
+                        <div class="metric-value">$${data.final_portfolio_value.toLocaleString('en-US', {maximumFractionDigits: 0})}</div>
+                        <div class="metric-label">Final Value</div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="metric-card">
+                        <div class="metric-value">${data.total_trades}</div>
+                        <div class="metric-label">Total Trades</div>
+                    </div>
+                </div>
+            `;
+            
+            // Auto-fit all metric values after rendering
+            setTimeout(() => {
+                const metricValues = metricsRow.querySelectorAll('.metric-value');
+                metricValues.forEach(autoFitText);
+            }, 10);
+            
+            // Create portfolio chart
+            const portfolioData = data.portfolio_values;
+            const dates = portfolioData.map(d => d.date);
+            const values = portfolioData.map(d => d.portfolio_value);
+            
+            // Create trade markers
+            const tradeDates = data.trade_history.map(t => t.date);
+            const tradeValues = data.trade_history.map(t => t.portfolio_value);
+            const tradeActions = data.trade_history.map(t => t.action);
+            
+            const portfolioTrace = {
+                x: dates,
+                y: values,
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Portfolio Value',
+                line: {color: '#667eea', width: 2}
+            };
+            
+            // Add trade markers
+            const buyMarkers = {
+                x: tradeDates.filter((_, i) => tradeActions[i] === 'BUY'),
+                y: tradeValues.filter((_, i) => tradeActions[i] === 'BUY'),
+                type: 'scatter',
+                mode: 'markers',
+                name: 'Buy Trades',
+                marker: {color: '#28a745', size: 8, symbol: 'triangle-up'},
+                showlegend: true
+            };
+            
+            const sellMarkers = {
+                x: tradeDates.filter((_, i) => tradeActions[i] === 'SELL'),
+                y: tradeValues.filter((_, i) => tradeActions[i] === 'SELL'),
+                type: 'scatter',
+                mode: 'markers',
+                name: 'Sell Trades',
+                marker: {color: '#dc3545', size: 8, symbol: 'triangle-down'},
+                showlegend: true
+            };
+            
+            const portfolioLayout = {
+                title: {
+                    text: 'Portfolio Value Over Time',
+                    font: {color: '#ffffff', size: 16}
+                },
+                xaxis: {
+                    title: {text: 'Date', font: {color: '#ffffff'}},
+                    gridcolor: 'rgba(255,255,255,0.1)',
+                    color: '#ffffff'
+                },
+                yaxis: {
+                    title: {text: 'Portfolio Value ($)', font: {color: '#ffffff'}},
+                    gridcolor: 'rgba(255,255,255,0.1)',
+                    color: '#ffffff'
+                },
+                height: 400,
+                autosize: true,
+                margin: {l: 60, r: 30, t: 60, b: 50},
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                font: {color: '#ffffff'},
+                responsive: true,
+                showlegend: true
+            };
+            
+            // Only show trade markers if there are trades
+            const traces = [portfolioTrace];
+            if (tradeDates.length > 0) {
+                traces.push(buyMarkers, sellMarkers);
+            }
+            
+            window.portfolioChart = Plotly.newPlot('portfolio-chart', traces, portfolioLayout, {responsive: true});
+            
+            // Create returns chart - show actual portfolio performance
+            const returns = [];
+            const returnDates = [];
+            const initialValue = values[0] || data.initial_capital;
+            
+            // Calculate daily returns
+            for (let i = 1; i < values.length; i++) {
+                if (values[i-1] && values[i-1] > 0 && values[i] && !isNaN(values[i]) && !isNaN(values[i-1])) {
+                    const dailyReturn = (values[i] - values[i-1]) / values[i-1];
+                    returns.push(dailyReturn * 100); // Convert to percentage
+                    returnDates.push(dates[i]);
+                }
+            }
+            
+            // Only create returns chart if we have data
+            if (returns.length > 0) {
+                const returnsTrace = {
+                    x: returnDates,
+                    y: returns,
+                    type: 'scatter',
+                    mode: 'lines+markers',
+                    name: 'Daily Returns (%)',
+                    line: {color: '#667eea', width: 1.5},
+                    marker: {
+                        size: 4,
+                        color: returns.map(r => r >= 0 ? '#38ef7d' : '#eb3349'),
+                        line: {width: 0.5, color: 'rgba(255,255,255,0.2)'}
+                    },
+                    fill: 'tozeroy',
+                    fillcolor: 'rgba(102, 126, 234, 0.1)'
+                };
+                
+                const returnsLayout = {
+                    title: {
+                        text: 'Daily Portfolio Returns (%)',
+                        font: {color: '#ffffff', size: 16}
+                    },
+                    xaxis: {
+                        title: {text: 'Date', font: {color: '#ffffff'}},
+                        gridcolor: 'rgba(255,255,255,0.1)',
+                        color: '#ffffff'
+                    },
+                    yaxis: {
+                        title: {text: 'Return (%)', font: {color: '#ffffff'}},
+                        gridcolor: 'rgba(255,255,255,0.1)',
+                        color: '#ffffff'
+                    },
+                    height: 400,
+                    autosize: true,
+                    margin: {l: 60, r: 30, t: 60, b: 50},
+                    plot_bgcolor: 'rgba(0,0,0,0)',
+                    paper_bgcolor: 'rgba(0,0,0,0)',
+                    font: {color: '#ffffff'},
+                    responsive: true,
+                    showlegend: true
+                };
+                
+                window.returnsChart = Plotly.newPlot('returns-chart', [returnsTrace], returnsLayout, {responsive: true});
+                
+                // Create cumulative returns chart
+                const cumulativeReturns = [];
+                let cumulative = 1;
+                for (let i = 0; i < returns.length; i++) {
+                    cumulative *= (1 + returns[i] / 100);
+                    cumulativeReturns.push((cumulative - 1) * 100);
+                }
+                
+                const cumulativeTrace = {
+                    x: returnDates,
+                    y: cumulativeReturns,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Cumulative Returns (%)',
+                    line: {color: '#38ef7d', width: 3},
+                    fill: 'tozeroy',
+                    fillcolor: 'rgba(56, 239, 125, 0.2)'
+                };
+                
+                const cumulativeLayout = {
+                    title: {
+                        text: 'Cumulative Portfolio Returns (%)',
+                        font: {color: '#ffffff', size: 16}
+                    },
+                    xaxis: {
+                        title: {text: 'Date', font: {color: '#ffffff'}},
+                        gridcolor: 'rgba(255,255,255,0.1)',
+                        color: '#ffffff'
+                    },
+                    yaxis: {
+                        title: {text: 'Cumulative Return (%)', font: {color: '#ffffff'}},
+                        gridcolor: 'rgba(255,255,255,0.1)',
+                        color: '#ffffff'
+                    },
+                    height: 400,
+                    autosize: true,
+                    margin: {l: 60, r: 30, t: 60, b: 50},
+                    plot_bgcolor: 'rgba(0,0,0,0)',
+                    paper_bgcolor: 'rgba(0,0,0,0)',
+                    font: {color: '#ffffff'},
+                    responsive: true,
+                    showlegend: true
+                };
+                
+                // Plot cumulative returns chart
+                window.cumulativeChart = Plotly.newPlot('cumulative-chart', [cumulativeTrace], cumulativeLayout, {responsive: true});
+            } else {
+                // Hide charts if no data
+                document.getElementById('returns-chart').style.display = 'none';
+                const cumulativeDiv = document.getElementById('cumulative-chart');
+                if (cumulativeDiv) cumulativeDiv.style.display = 'none';
+            }
+            
+            // Display trade history
+            const tradeTbody = document.getElementById('trade-tbody');
+            tradeTbody.innerHTML = '';
+            
+            data.trade_history.forEach(trade => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${new Date(trade.date).toLocaleDateString()}</td>
+                    <td><span class="badge ${trade.action === 'BUY' ? 'bg-success' : 'bg-danger'}">${trade.action}</span></td>
+                    <td>$${trade.price.toFixed(2)}</td>
+                    <td>${trade.quantity}</td>
+                    <td>$${(trade.cost || trade.revenue || 0).toFixed(2)}</td>
+                `;
+                tradeTbody.appendChild(row);
+            });
+            
+            // Show results
+            document.getElementById('results-container').style.display = 'block';
+        }
+        
+        // Set default dates
+        const today = new Date();
+        const oneYearAgo = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
+        
+        document.getElementById('end_date').value = today.toISOString().split('T')[0];
+        document.getElementById('start_date').value = oneYearAgo.toISOString().split('T')[0];
+        
+        // Make charts responsive to window resize
+        window.addEventListener('resize', function() {
+            if (window.portfolioChart) {
+                Plotly.relayout('portfolio-chart', {
+                    width: document.getElementById('portfolio-chart').offsetWidth
+                });
+            }
+            if (window.returnsChart) {
+                Plotly.relayout('returns-chart', {
+                    width: document.getElementById('returns-chart').offsetWidth
+                });
+            }
+            if (window.cumulativeChart) {
+                Plotly.relayout('cumulative-chart', {
+                    width: document.getElementById('cumulative-chart').offsetWidth
+                });
+            }
+        });
+    </script>
+</body>
+</html>
