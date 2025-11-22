@@ -27,3 +27,18 @@ wheels/
 .vscode/
 .idea/
 
+# Python package installation directories
+Scripts/
+etc/
+share/
+Lib/
+Include/
+*.exe
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
