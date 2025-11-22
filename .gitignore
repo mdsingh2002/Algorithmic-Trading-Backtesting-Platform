@@ -26,6 +26,9 @@ wheels/
 .DS_Store
 .vscode/
 .idea/
+config.py
+env_example.txt
+
 
 # Python package installation directories
 Scripts/
