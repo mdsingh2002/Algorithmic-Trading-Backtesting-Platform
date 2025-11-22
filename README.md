@@ -35,6 +35,10 @@ Performance Tracking
 
 - Open/closed positions
 
+  Future Features:
+
+  - Using an Interactive Brokers account to do both paper trade and live trade
+
 - Trade history
 
 - Win/loss rate, max drawdown, and more (depending on strategy implementation)
