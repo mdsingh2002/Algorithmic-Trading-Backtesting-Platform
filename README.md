@@ -39,6 +39,6 @@ Performance Tracking
 
 - Win/loss rate, max drawdown, and more (depending on strategy implementation)
 
-  Future Features:
+Future Features:
 
-  - Using an Interactive Brokers account to do both paper trade and live trade
+- Using an Interactive Brokers account to do both paper trade and live trade
